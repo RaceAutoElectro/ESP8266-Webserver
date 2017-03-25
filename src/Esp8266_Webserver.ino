@@ -1,5 +1,5 @@
 /* 
- * ESP8266 Webserver
+ * RAE uKnock Webserver
  * Starts the ESP8266 as an access point and provides a web interface to configure WiFi credentials and control GPIO pins
  * Go to http://192.168.4.1 in a web browser connected to this access point to see it
  * 
@@ -41,6 +41,7 @@ void setup()
   server.on("/",   rootPageHandler);
   server.on("/wlan_config", wlanPageHandler);
   server.on("/gpio", gpioPageHandler);
+  server.on("/knkchip", knkchipPageHandler); //pus !!
   server.onNotFound(handleNotFound);
   
   server.begin();
@@ -56,12 +57,12 @@ void loop()
 /* Root page for the webserver */
 void rootPageHandler() 
 {
-  String response_message = "<html><head><title>ESP8266 Webserver</title></head>";
-  response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>ESP8266 Webserver</center></h1>";
+  String response_message = "<html><head><title>RAE uKnock Webserver</title></head>";
+  response_message += "<body style=\"background-color:#ffa500\"><h1><center>RAE uKnock Webserver</center></h1>";
   
   if (WiFi.status() == WL_CONNECTED)
   {
-    response_message += "<center>WLAN Status: Connected</center><br>";
+    response_message += "<center>WLAN Status: Connected </center><br>";
   }
   else
   {
@@ -69,7 +70,8 @@ void rootPageHandler()
   }
   
   response_message += "<ul><li><a href=\"/wlan_config\">Configure WLAN settings</a></li>";
-  response_message += "<li><a href=\"/gpio\">Control GPIO pins</h4></li></ul>";
+  response_message += "<li><a href=\"/gpio\">Control GPIO pins</h4></li>";
+  response_message += "<li><a href=\"/knkchip\">Control Knock Chip</h4></li></ul>";               //PUS !!!!!!!!!!
   response_message += "</body></html>";
   
   server.send(200, "text/html", response_message);
@@ -106,8 +108,8 @@ void wlanPageHandler()
   
   String response_message = "";
   response_message += "<html>";
-  response_message += "<head><title>ESP8266 Webserver</title></head>";
-  response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>WLAN Settings</center></h1>";
+  response_message += "<head><title>RAE uKnock Webserver</title></head>";
+  response_message += "<body style=\"background-color:#ffa500\"><h1><center>WLAN Settings</center></h1>";
   
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -167,8 +169,8 @@ void gpioPageHandler()
     }
   }
 
-  String response_message = "<html><head><title>ESP8266 Webserver</title></head>";
-  response_message += "<body style=\"background-color:PaleGoldenRod\"><h1><center>Control GPIO pins</center></h1>";
+  String response_message = "<html><head><title>RAE uKnock Webserver</title></head>";
+  response_message += "<body style=\"background-color:#ffa500\"><h1><center>Control GPIO pins</center></h1>";
   response_message += "<form method=\"get\">";
 
   response_message += "GPIO2:<br>";
@@ -189,6 +191,47 @@ void gpioPageHandler()
   
   server.send(200, "text/html", response_message);
 }
+
+void knkchipPageHandler()                      ////////// pus!!!!!!!!!!
+{
+  // Check if there are any GET parameters
+  if (server.hasArg("knkchip2"))
+  { 
+    if (server.arg("knkchip2") == "1")
+    {
+      digitalWrite(GPIO2, HIGH);
+      Serial.println("knk hi");
+    }
+    else
+    {
+      digitalWrite(GPIO2, LOW);
+      Serial.println("knk low");
+    }
+  }
+
+  String response_message = "<html><head><title>RAE uKnock Webserver</title></head>";
+  response_message += "<body style=\"background-color:#ffa500\"><h1><center>KnockChip Parameters</center></h1>";
+  response_message += "<form method=\"get\">";
+
+  response_message += "Knock:<br>";
+
+  if (digitalRead(GPIO2) == LOW)
+  {
+    response_message += "<input type=\"radio\" name=\"knkchip2\" value=\"1\" onclick=\"submit();\">Onknk<br>";
+    response_message += "<input type=\"radio\" name=\"knkchip2\" value=\"0\" onclick=\"submit();\" checked>Offknk<br>";
+  }
+  else
+  {
+    response_message += "<input type=\"radio\" name=\"knkchip2\" value=\"1\" onclick=\"submit();\" checked>Onknk<br>";
+    response_message += "<input type=\"radio\" name=\"knkchip2\" value=\"0\" onclick=\"submit();\">Offknk<br>";
+  }
+
+  response_message += "</form></body></html>";
+
+  
+  server.send(200, "text/html", response_message);
+}
+
 
 /* Called if requested page is not found */
 void handleNotFound()
